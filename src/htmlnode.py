@@ -11,12 +11,12 @@ class HTMLNode:
 
     def props_to_html(self):
         if self.props is None or not self.props:
-            print("props is none")
             return ""
         return_string = []
         for key, value in self.props.items():
             return_string.append(f'{key}="{value}"')
-        return f" ".join(return_string)
+        joined_attributes = " ".join(return_string)
+        return f" {joined_attributes}"
 
     def __repr__(self):
         return f"{self}"
@@ -28,13 +28,27 @@ class LeafNode(HTMLNode):
 
     def to_html(self):
         if self.value is None:
-            raise ValueError
+            raise ValueError("LeafNode requires a value")
         if self.tag is None:
             return f"{self.value}"
-        if self.tag == "a":
-            return f"<{self.tag} {super().props_to_html()}>{self.value}</{self.tag}>"
-        if self.tag == "img":
-            print("Image detected!!")
-            return f"<{self.tag}>{self.value}</{self.tag}>"
-        else:
-            return f"<{self.tag}>{self.value}</{self.tag}>"
+        return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
+
+
+class ParentNode(HTMLNode):
+    def __init__(self, tag, children, props=None):
+        super().__init__(tag, None, children, props)
+
+    def to_html(self):
+        if not self.tag:
+            raise ValueError("ParentNode requires a tag")
+        if not self.children:
+            raise ValueError("ParentNode requires children")
+
+        opening_tag_html = f"<{self.tag}{self.props_to_html()}>"
+        children_html_content = ""
+        for child_node in self.children:
+            children_html_content += child_node.to_html()
+
+        closing_tag_html = f"</{self.tag}>"  #
+        return f"{opening_tag_html}{children_html_content}{closing_tag_html}"
+        # return f"{self(self.tag, self.value, self.props)}"
